@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { api, rateLimit, ownerHash, ApiError } from '../../lib/http.js';
+import { api, rateLimit, ApiError } from '../../lib/http.js';
+import { ownerId as ownerHash } from '../../lib/auth.js';
 import { projectsCol } from '../../lib/db.js';
 import { validateProjectBody, full } from '../../lib/validate.js';
 
