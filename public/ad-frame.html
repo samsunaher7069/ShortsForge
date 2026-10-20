@@ -1,0 +1,11 @@
+<!doctype html>
+<meta charset="utf-8">
+<body style="margin:0;overflow:hidden">
+<script>
+const q = new URLSearchParams(location.search);
+const key = q.get('key'), w = +q.get('w'), h = +q.get('h'), s = q.get('s');
+if (/^[\w-]+$/.test(key || '') && w > 0 && w <= 1000 && h > 0 && h <= 1000 && /^https:\/\//.test(s || '')) {
+  window.atOptions = { key, format: 'iframe', height: h, width: w, params: {} };
+  document.write('<script src="' + encodeURI(s) + '"><\/script>');
+}
+</script>
