@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>ShortsForge - AI Shorts Studio</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo" aria-hidden="true">SF</span><div><h1>ShortsForge</h1><p>AI Shorts Studio</p></div></div>
+  <nav class="nav"><button id="btn-new" class="btn ghost" type="button">New project</button><button id="btn-projects" class="btn ghost" type="button">Saved projects</button></nav>
+</header>
+<main>
+  <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+  <section id="setup" class="card" aria-labelledby="h-setup">
+    <h2 id="h-setup">Story setup</h2>
+    <form id="form" novalidate></form>
+  </section>
+  <section id="results" aria-label="Production pack" hidden></section>
+</main>
+<dialog id="dlg" aria-labelledby="h-dlg">
+  <div class="dlg-head"><h2 id="h-dlg">Saved projects</h2><button id="dlg-close" class="btn ghost" type="button">Close</button></div>
+  <p class="note">Projects are tied to a private key stored in this browser. There are no accounts: clearing site data or switching device means you lose access to them.</p>
+  <div id="plist"></div>
+</dialog>
+<input id="file" type="file" accept="application/json,.json" hidden>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
