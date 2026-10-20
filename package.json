@@ -1,0 +1,10 @@
+{
+  "name": "shortsforge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ShortsForge - AI Shorts Studio",
+  "engines": { "node": "24.x" },
+  "scripts": { "dev": "npx vercel dev" },
+  "dependencies": { "mongodb": "^6.10.0" }
+}
