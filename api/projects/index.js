@@ -1,4 +1,5 @@
-import { api, rateLimit, ownerHash } from '../../lib/http.js';
+import { api, rateLimit } from '../../lib/http.js';
+import { ownerId as ownerHash } from '../../lib/auth.js';
 import { projectsCol } from '../../lib/db.js';
 import { validateProjectBody, summary } from '../../lib/validate.js';
 
