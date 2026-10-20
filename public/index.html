@@ -10,22 +10,35 @@
 <body>
 <header class="top">
   <div class="brand"><span class="logo" aria-hidden="true">SF</span><div><h1>ShortsForge</h1><p>AI Shorts Studio</p></div></div>
-  <nav class="nav"><button id="btn-new" class="btn ghost" type="button">New project</button><button id="btn-projects" class="btn ghost" type="button">Saved projects</button></nav>
+  <nav class="nav">
+    <span id="user" class="hint"></span>
+    <button id="btn-new" class="btn ghost" type="button" hidden>New project</button>
+    <button id="btn-projects" class="btn ghost" type="button" hidden>Saved projects</button>
+    <button id="btn-out" class="btn ghost" type="button" hidden>Sign out</button>
+  </nav>
 </header>
 <main>
   <div id="status" class="status" role="status" aria-live="polite" hidden></div>
-  <section id="setup" class="card" aria-labelledby="h-setup">
+  <section id="login" class="card" aria-labelledby="h-login" hidden>
+    <h2 id="h-login">Sign in</h2>
+    <p class="note">Sign in with Google to generate and save projects. Your projects stay private to your account.</p>
+    <div id="g-btn" class="gbtn"></div>
+  </section>
+  <section id="setup" class="card" aria-labelledby="h-setup" hidden>
     <h2 id="h-setup">Story setup</h2>
     <form id="form" novalidate></form>
   </section>
   <section id="results" aria-label="Production pack" hidden></section>
+  <aside id="ad-slot" class="ad" hidden><p class="hint">Advertisement</p></aside>
 </main>
 <dialog id="dlg" aria-labelledby="h-dlg">
   <div class="dlg-head"><h2 id="h-dlg">Saved projects</h2><button id="dlg-close" class="btn ghost" type="button">Close</button></div>
-  <p class="note">Projects are tied to a private key stored in this browser. There are no accounts: clearing site data or switching device means you lose access to them.</p>
+  <p class="note">Projects are private to your Google account.</p>
   <div id="plist"></div>
 </dialog>
 <input id="file" type="file" accept="application/json,.json" hidden>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script type="module" src="/app.js"></script>
+<script type="module" src="/ads.js"></script>
 </body>
 </html>
