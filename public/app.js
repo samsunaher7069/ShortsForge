@@ -21,7 +21,7 @@ const TABS = [['story', 'Story & script'], ['scenes', 'Five scenes'], ['flow', '
 const PACE = 2.5;
 
 const $ = (s) => document.querySelector(s);
-const S = { input: null, pack: null, id: null, dirty: false, busy: false, saving: false, tab: 'story' };
+const S = { input: null, pack: null, id: null, dirty: false, busy: false, saving: false, tab: 'story', user: null };
 
 function h(tag, props = {}, ...kids) {
   const e = document.createElement(tag);
@@ -35,16 +35,11 @@ function h(tag, props = {}, ...kids) {
   return e;
 }
 
-const rnd = () => crypto.randomUUID().replace(/-/g, '');
-let ownerKey = null;
-try { ownerKey = localStorage.getItem('sf_owner'); if (!ownerKey) { ownerKey = rnd() + rnd(); localStorage.setItem('sf_owner', ownerKey); } }
-catch { ownerKey ||= rnd() + rnd(); }
-
 async function call(path, { method = 'GET', body, signal } = {}) {
   if (!navigator.onLine) throw new Error('You appear to be offline. Check your connection and try again.');
   let r;
   try {
-    r = await fetch(path, { method, signal, headers: { 'Content-Type': 'application/json', 'X-Owner-Key': ownerKey }, body: body ? JSON.stringify(body) : undefined });
+    r = await fetch(path, { method, signal, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
   } catch (e) {
     if (e.name === 'AbortError') throw new Error('The request took too long and was cancelled. Try again.');
     throw new Error('Network error: could not reach the server.');
@@ -52,6 +47,7 @@ async function call(path, { method = 'GET', body, signal } = {}) {
   let data = null;
   try { data = await r.json(); } catch { /* non-JSON error page */ }
   if (!r.ok) {
+    if (data?.error?.code === 'LOGIN_REQUIRED') { S.user = null; renderAuth(); initAuth(); }
     const err = new Error(data?.error?.message || `Request failed (${r.status}).`);
     err.details = data?.error?.details;
     throw err;
@@ -76,7 +72,7 @@ function buildForm() {
     if (f.t === 'sel') ctl = h('select', { id, name: f.k }, f.o.map((o) => h('option', { value: o }, o)));
     else if (f.t === 'area') ctl = h('textarea', { id, name: f.k, class: 'in', rows: f.rows, maxlength: f.max, placeholder: f.ph });
     else ctl = h('input', { id, name: f.k, type: 'text', class: 'in', maxlength: f.max, placeholder: f.ph, required: f.req ? true : null });
-    const wrap = h('div', { class: `field${f.t === 'area' || f.k === 'projectName' ? ' wide' : ''}` }, h('label', { for: id }, f.l, f.req ? ' *' : ''), ctl);
+    const wrap = h('div', { class: 'field' }, h('label', { for: id }, f.l, f.req ? ' *' : ''), ctl);
     if (f.t === 'sel') ctl.value = f.def;
     if (f.custom) {
       const c = h('input', { id: `${id}Custom`, type: 'text', class: 'in', maxlength: 120, placeholder: `Describe your custom ${f.l.toLowerCase()}`, 'aria-label': `${f.l} (custom)`, hidden: true });
@@ -350,12 +346,58 @@ function newProject() {
   $('#f-projectName').focus();
 }
 
+/* ---------- Google sign-in ---------- */
+function renderAuth() {
+  const on = Boolean(S.user);
+  $('#login').hidden = on;
+  $('#setup').hidden = !on;
+  if (!on) $('#results').hidden = true;
+  $('#user').textContent = on ? S.user.email : '';
+  for (const id of ['#btn-out', '#btn-new', '#btn-projects']) $(id).hidden = !on;
+}
+
+function waitGsi() {
+  return new Promise((res) => {
+    const t = setInterval(() => { if (window.google?.accounts?.id) { clearInterval(t); res(); } }, 100);
+    setTimeout(() => { clearInterval(t); res(); }, 8000);
+  });
+}
+
+async function onCredential(r) {
+  try {
+    const d = await call('/api/session', { method: 'POST', body: { credential: r.credential } });
+    S.user = d.user; renderAuth(); status(`Signed in as ${d.user.email}.`, 'ok');
+  } catch (e) { status(e.message, 'err'); }
+}
+
+async function initAuth() {
+  let s;
+  try { s = await call('/api/session'); } catch (e) { status(e.message, 'err'); return; }
+  S.user = s.user; renderAuth();
+  if (S.user) return;
+  if (!s.clientId) { status('Google login is not configured yet (GOOGLE_CLIENT_ID missing).', 'err'); return; }
+  await waitGsi();
+  if (!window.google?.accounts?.id) { status('Could not load Google sign-in. Check your connection or ad blocker.', 'err'); return; }
+  google.accounts.id.initialize({ client_id: s.clientId, callback: onCredential });
+  $('#g-btn').replaceChildren();
+  google.accounts.id.renderButton($('#g-btn'), { theme: 'filled_black', size: 'large', text: 'signin_with', width: Math.min(300, window.innerWidth - 80) });
+}
+
+async function signOut() {
+  if (S.pack && S.dirty && !confirm('Sign out? Unsaved edits will be lost.')) return;
+  S.dirty = false;
+  try { await call('/api/session', { method: 'DELETE' }); } catch { /* reload anyway */ }
+  location.reload();
+}
+
 buildForm();
 fillForm({});
 $('#btn-new').addEventListener('click', newProject);
 $('#btn-projects').addEventListener('click', openList);
+$('#btn-out').addEventListener('click', signOut);
 $('#dlg-close').addEventListener('click', () => $('#dlg').close());
 $('#file').addEventListener('change', (e) => importFile(e.target.files[0]));
 window.addEventListener('offline', () => status('You are offline. Generating and saving need a connection.', 'err'));
 window.addEventListener('online', () => status('Back online.', 'ok'));
 window.addEventListener('beforeunload', (e) => { if (S.dirty && S.pack) e.preventDefault(); });
+initAuth();
