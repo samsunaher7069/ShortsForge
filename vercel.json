@@ -3,11 +3,17 @@
   "functions": { "api/generate.js": { "maxDuration": 60 } },
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/((?!ad-frame\\.html).*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "same-origin" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'" }
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; frame-src 'self' https:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'" }
+      ]
+    },
+    {
+      "source": "/ad-frame.html",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox" }
       ]
     }
   ]
